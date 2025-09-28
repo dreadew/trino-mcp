@@ -38,6 +38,14 @@ Repository = "https://github.com/dreadew/trino-mcp"
 build-backend = "poetry.core.masonry.api"
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 
+[tool.poetry]
+authors = ["dreadew <p74ur@yandex.ru>"]
+description = "Model Context Protocol (MCP) server for Trino database schema analysis"
+name = "trino-mcp-server"
+packages = [{include = "src"}]
+readme = "README.md"
+version = "0.1.0"
+
 [dependency-groups]
 dev = [
   "isort (>=6.0.1,<7.0.0)",

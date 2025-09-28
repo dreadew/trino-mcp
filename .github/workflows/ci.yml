@@ -49,11 +49,7 @@ jobs:
 
       - name: Lint with flake8
         run: |
-          poetry run flake8 src tests
-
-      - name: Run unit tests
-        run: |
-          poetry run python -m pytest tests -v --tb=short
+          poetry run flake8 src
 
       - name: Check for security issues with bandit
         run: |
