@@ -1,0 +1,69 @@
+[project]
+authors = [
+  {name = "dreadew", email = "p74ur@yandex.ru"},
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Database",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "mcp>=1.15.0,<2.0.0",
+  "trino>=0.336.0,<0.337.0",
+  "python-dotenv>=1.1.1,<2.0.0",
+]
+description = "Model Context Protocol (MCP) server for Trino database schema analysis"
+homepage = "https://github.com/dreadew/VkHackMCP"
+keywords = ["mcp", "trino", "database", "schema", "analysis", "ddl"]
+license = {text = "MIT"}
+name = "trino-mcp-server"
+readme = "README.md"
+repository = "https://github.com/dreadew/VkHackMCP"
+requires-python = ">=3.11"
+version = "0.1.0"
+
+[project.scripts]
+trino-mcp-server = "src.api.server:main"
+
+[project.urls]
+Homepage = "https://github.com/dreadew/trino-mcp"
+Issues = "https://github.com/dreadew/trino-mcp/issues"
+Repository = "https://github.com/dreadew/trino-mcp"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+
+[dependency-groups]
+dev = [
+  "isort (>=6.0.1,<7.0.0)",
+  "black (>=25.9.0,<26.0.0)",
+  "bandit (>=1.8.6,<2.0.0)",
+  "flake8 (>=7.3.0,<8.0.0)",
+]
+
+[tool.black]
+extend-exclude = '''
+/(
+  \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | __pycache__
+  | migrations
+)/
+'''
+include = '\.pyi?$'
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+known_first_party = ["src", "tests"]
+known_third_party = ["fastapi", "pydantic", "sqlalchemy", "taskiq", "pytest"]
+line_length = 88
+multi_line_output = 3
+profile = "black"
