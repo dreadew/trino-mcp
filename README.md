@@ -1,5 +1,7 @@
 # Trino MCP Server
 
+[![CI](https://github.com/dreadew/trino-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/dreadew/trino-mcp/actions/workflows/ci.yml)
+
 **Model Context Protocol (MCP) сервер для анализа схем базы данных Trino**
 
 Этот проект представляет собой MCP сервер, который предоставляет мощные инструменты для анализа структуры баз данных Trino. Сервер принимает параметры подключения динамически и поддерживает работу с множественными подключениями одновременно.
