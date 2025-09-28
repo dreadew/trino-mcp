@@ -2,19 +2,10 @@
 authors = [
   {name = "dreadew", email = "p74ur@yandex.ru"},
 ]
-classifiers = [
-  "Development Status :: 4 - Beta",
-  "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Topic :: Database",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-]
 dependencies = [
-  "mcp>=1.15.0,<2.0.0",
   "trino>=0.336.0,<0.337.0",
   "python-dotenv>=1.1.1,<2.0.0",
+  "mcp[cli] (>=1.15.0,<2.0.0)",
 ]
 description = "Model Context Protocol (MCP) server for Trino database schema analysis"
 homepage = "https://github.com/dreadew/VkHackMCP"

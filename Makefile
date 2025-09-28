@@ -32,4 +32,4 @@ ci: check-all
 
 build-and-run:
 	docker build -t trino-mcp .
-	docker run trino-mcp
+	docker run -d trino-mcp

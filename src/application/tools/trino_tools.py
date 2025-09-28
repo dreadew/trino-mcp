@@ -1,7 +1,4 @@
-from typing import List
-
-from mcp.server import Server
-from mcp.types import TextContent, Tool
+from typing import Optional
 
 from src.application.tools import (
     connection_status,
@@ -19,208 +16,140 @@ from src.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-def register_tools(server: Server):
+def register_tools(mcp_server):
     """
-    Регистрирует все инструменты для работы с Trino.
-    :param server: MCP сервер для регистрации инструментов
+    Регистрирует все инструменты для работы с Trino в FastMCP сервере.
     """
 
-    TOOLS = [
-        Tool(
-            name="connection_status",
-            description="Проверяет статус подключения к Trino",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    }
-                },
-                "required": ["jdbc_url"],
-            },
-        ),
-        Tool(
-            name="list_catalogs",
-            description="Возвращает список всех доступных каталогов",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    }
-                },
-                "required": ["jdbc_url"],
-            },
-        ),
-        Tool(
-            name="list_schemas",
-            description="Возвращает список схем в указанном каталоге",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    },
-                    "catalog": {
-                        "type": "string",
-                        "description": "Название каталога (опционально)",
-                    },
-                },
-                "required": ["jdbc_url"],
-            },
-        ),
-        Tool(
-            name="list_tables",
-            description="Возвращает список таблиц в указанной схеме",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    },
-                    "schema": {"type": "string", "description": "Название схемы"},
-                    "catalog": {
-                        "type": "string",
-                        "description": "Название каталога (опционально)",
-                    },
-                },
-                "required": ["jdbc_url", "schema"],
-            },
-        ),
-        Tool(
-            name="describe_table",
-            description="Возвращает описание структуры таблицы",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    },
-                    "table": {"type": "string", "description": "Название таблицы"},
-                    "schema": {"type": "string", "description": "Название схемы"},
-                    "catalog": {
-                        "type": "string",
-                        "description": "Название каталога (опционально)",
-                    },
-                },
-                "required": ["jdbc_url", "table", "schema"],
-            },
-        ),
-        Tool(
-            name="execute_query",
-            description="Выполняет SQL запрос с ограничением на количество строк",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    },
-                    "sql": {
-                        "type": "string",
-                        "description": "SQL запрос для выполнения",
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "description": "Максимальное количество строк для возврата",
-                        "default": 100,
-                    },
-                    "catalog": {
-                        "type": "string",
-                        "description": "Каталог по умолчанию",
-                    },
-                    "schema": {"type": "string", "description": "Схема по умолчанию"},
-                },
-                "required": ["jdbc_url", "sql"],
-            },
-        ),
-        Tool(
-            name="validate_ddl_statements",
-            description="Анализирует и валидирует список DDL выражений",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "ddl_list": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Список DDL выражений для анализа",
-                    }
-                },
-                "required": ["ddl_list"],
-            },
-        ),
-        Tool(
-            name="execute_ddl_statements",
-            description="Выполняет список DDL выражений с предварительной валидацией",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "jdbc_url": {
-                        "type": "string",
-                        "description": "JDBC URL для подключения к Trino",
-                    },
-                    "ddl_list": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Список DDL выражений для выполнения",
-                    },
-                    "catalog": {
-                        "type": "string",
-                        "description": "Каталог по умолчанию",
-                    },
-                    "schema": {"type": "string", "description": "Схема по умолчанию"},
-                    "validate_first": {
-                        "type": "boolean",
-                        "description": "Выполнить валидацию перед выполнением",
-                        "default": True,
-                    },
-                },
-                "required": ["jdbc_url", "ddl_list"],
-            },
-        ),
-        Tool(
-            name="get_connection_stats",
-            description="Возвращает статистику активных подключений",
-            inputSchema={"type": "object", "properties": {}, "required": []},
-        ),
-    ]
-
-    @server.list_tools()
-    async def list_tools():
-        """Возвращает список доступных инструментов."""
-        return TOOLS
-
-    @server.call_tool()
-    async def call_tool(name: str, arguments: dict) -> List[TextContent]:
-        """Вызывает указанный инструмент с переданными аргументами."""
+    @mcp_server.tool()
+    async def connection_status_tool(jdbc_url: str) -> str:
+        """Проверяет статус подключения к Trino."""
         try:
-            if name == "connection_status":
-                result = await connection_status(**arguments)
-            elif name == "list_catalogs":
-                result = await list_catalogs(**arguments)
-            elif name == "list_schemas":
-                result = await list_schemas(**arguments)
-            elif name == "list_tables":
-                result = await list_tables(**arguments)
-            elif name == "describe_table":
-                result = await describe_table(**arguments)
-            elif name == "execute_query":
-                result = await execute_query(**arguments)
-            elif name == "validate_ddl_statements":
-                result = await validate_ddl_statements(**arguments)
-            elif name == "execute_ddl_statements":
-                result = await execute_ddl_statements(**arguments)
-            elif name == "get_connection_stats":
-                result = await get_connection_stats(**arguments)
-            else:
-                raise ValueError(f"Unknown tool: {name}")
-
-            return [TextContent(type="text", text=str(result))]
+            result = connection_status(jdbc_url=jdbc_url)
+            if hasattr(result, "__await__"):
+                result = await result
+            return str(result)
         except Exception as e:
-            logger.error(f"Error calling tool {name}: {e}")
-            return [TextContent(type="text", text=f"Error: {str(e)}")]
+            logger.error(f"Error in connection_status: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def list_catalogs_tool(jdbc_url: str) -> str:
+        """Возвращает список всех доступных каталогов."""
+        try:
+            result = await list_catalogs(jdbc_url=jdbc_url)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in list_catalogs: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def list_schemas_tool(jdbc_url: str, catalog: Optional[str] = None) -> str:
+        """Возвращает список схем в указанном каталоге."""
+        try:
+            kwargs = {"jdbc_url": jdbc_url}
+            if catalog:
+                kwargs["catalog"] = catalog
+            result = await list_schemas(**kwargs)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in list_schemas: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def list_tables_tool(
+        jdbc_url: str, schema: str, catalog: Optional[str] = None
+    ) -> str:
+        """Возвращает список таблиц в указанной схеме."""
+        try:
+            kwargs = {"jdbc_url": jdbc_url, "schema": schema}
+            if catalog:
+                kwargs["catalog"] = catalog
+            result = await list_tables(**kwargs)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in list_tables: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def describe_table_tool(
+        jdbc_url: str, table: str, schema: str, catalog: Optional[str] = None
+    ) -> str:
+        """Возвращает описание структуры таблицы."""
+        try:
+            kwargs = {"jdbc_url": jdbc_url, "table": table, "schema": schema}
+            if catalog:
+                kwargs["catalog"] = catalog
+            result = await describe_table(**kwargs)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in describe_table: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def execute_query_tool(
+        jdbc_url: str,
+        sql: str,
+        limit: int = 100,
+        catalog: Optional[str] = None,
+        schema: Optional[str] = None,
+    ) -> str:
+        """Выполняет SQL запрос с ограничением на количество строк."""
+        try:
+            kwargs = {"jdbc_url": jdbc_url, "sql": sql, "limit": limit}
+            if catalog:
+                kwargs["catalog"] = catalog
+            if schema:
+                kwargs["schema"] = schema
+            result = await execute_query(**kwargs)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in execute_query: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def validate_ddl_statements_tool(ddl_list: list) -> str:
+        """Анализирует и валидирует список DDL выражений."""
+        try:
+            result = await validate_ddl_statements(ddl_list=ddl_list)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in validate_ddl_statements: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def execute_ddl_statements_tool(
+        jdbc_url: str,
+        ddl_list: list,
+        catalog: Optional[str] = None,
+        schema: Optional[str] = None,
+        validate_first: bool = True,
+    ) -> str:
+        """Выполняет список DDL выражений с предварительной валидацией."""
+        try:
+            kwargs = {
+                "jdbc_url": jdbc_url,
+                "ddl_list": ddl_list,
+                "validate_first": validate_first,
+            }
+            if catalog:
+                kwargs["catalog"] = catalog
+            if schema:
+                kwargs["schema"] = schema
+            result = await execute_ddl_statements(**kwargs)
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in execute_ddl_statements: {e}")
+            return f"Error: {str(e)}"
+
+    @mcp_server.tool()
+    async def get_connection_stats_tool() -> str:
+        """Возвращает статистику активных подключений."""
+        try:
+            result = await get_connection_stats()
+            return str(result)
+        except Exception as e:
+            logger.error(f"Error in get_connection_stats: {e}")
+            return f"Error: {str(e)}"
+
+    logger.info("Все инструменты Trino зарегистрированы в FastMCP сервере")

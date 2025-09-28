@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from threading import Lock
 from typing import Any, Dict
 
+from trino.auth import BasicAuthentication
 from trino.dbapi import connect
 
 from src.core.logging import get_logger
@@ -54,10 +55,13 @@ class ConnectionManager:
                 "host": conn_params["host"],
                 "port": conn_params["port"],
                 "user": conn_params["user"],
+                "http_scheme": "https" if conn_params["port"] == 443 else "http",
             }
 
             if conn_params.get("password"):
-                connect_params["password"] = conn_params["password"]
+                connect_params["auth"] = BasicAuthentication(
+                    conn_params["user"], conn_params["password"]
+                )
             if conn_params.get("catalog"):
                 connect_params["catalog"] = conn_params["catalog"]
             if conn_params.get("schema"):
